@@ -13,7 +13,7 @@ export function bindPlayerToUI(filename = '') {
     const player = getPlayer();
 
     const $playPauseButton = $('.play-pause');
-    
+
     var skippingButtonInterval;
     addKeyboardShortcut(['f1','mod+1'], player.skip.bind(player, 'backwards'));
     addKeyboardShortcut(['f2','mod+2'], player.skip.bind(player, 'forwards'));
@@ -78,7 +78,27 @@ export function bindPlayerToUI(filename = '') {
         });
         document.querySelector('#player-time').style.display = 'block';
     } else {
-        document.querySelector('#player-time').style.display = 'none';
+        window.poop = player;
+        // if player.driver === 'YOUTUBE'
+        // player.driver._ytEl.getCurrentTime()
+        var mediaObject = document.createElement('media');
+            mediaObject.currentTime = 0;
+            mediaObject.duration = player.getLength();
+            mediaObject.pause = player.pause;
+            mediaObject.play = player.play;
+
+        var event = new CustomEvent("timeupdate",{});
+        var timeframe = setInterval(function(){
+            mediaObject.currentTime = player.getTime();
+            mediaObject.dispatchEvent(event);
+        }, 500)
+        var myProgressBar = new Progressor({
+             media : mediaObject,
+             bar   : playerHook,
+             // text  : "",                             
+             time  : document.querySelector('#player-time'),
+             hours : true   
+         });
     }
     
     player.onPlayPause(status => {
