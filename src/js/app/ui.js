@@ -13,7 +13,7 @@ export function bindPlayerToUI(filename = '') {
     const player = getPlayer();
 
     const $playPauseButton = $('.play-pause');
-
+    
     var skippingButtonInterval;
     addKeyboardShortcut(['f1','mod+1'], player.skip.bind(player, 'backwards'));
     addKeyboardShortcut(['f2','mod+2'], player.skip.bind(player, 'forwards'));
@@ -68,38 +68,15 @@ export function bindPlayerToUI(filename = '') {
 
     const playerHook = document.querySelector('#player-hook');
     playerHook.innerHTML = '';
-    if (document.querySelector('audio, video')) {
-        var progressBar = new Progressor({
-            media : document.querySelector('audio, video'),
-            bar : playerHook,
-            text : filename,                       
-            time : document.querySelector('#player-time'),
-            hours: true
-        });
-        document.querySelector('#player-time').style.display = 'block';
-    } else {
-        window.poop = player;
-        // if player.driver === 'YOUTUBE'
-        // player.driver._ytEl.getCurrentTime()
-        var mediaObject = document.createElement('media');
-            mediaObject.currentTime = 0;
-            mediaObject.duration = player.getLength();
-            mediaObject.pause = player.pause;
-            mediaObject.play = player.play;
-
-        var event = new CustomEvent("timeupdate",{});
-        var timeframe = setInterval(function(){
-            mediaObject.currentTime = player.getTime();
-            mediaObject.dispatchEvent(event);
-        }, 500)
-        var myProgressBar = new Progressor({
-             media : mediaObject,
-             bar   : playerHook,
-             // text  : "",                             
-             time  : document.querySelector('#player-time'),
-             hours : true   
-         });
-    }
+    var hasNativeMedia = document.querySelector('audio, video'); 
+    var progressBar = new Progressor({
+        media   : hasNativeMedia ? document.querySelector('audio, video') : player,
+        bar     : playerHook,
+        text    : hasNativeMedia ? filename : "",                       
+        time    : document.querySelector('#player-time'),
+        hours   : true
+    });
+    document.querySelector('#player-time').style.display = 'block';
     
     player.onPlayPause(status => {
         if (status === 'playing'){
