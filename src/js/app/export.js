@@ -68,6 +68,54 @@ exportFormats.download.push({
     }
 });
 
+exportFormats.download.push({
+    name: 'VTT Format',
+    extension: 'vtt',
+    fn: (txt) => {
+        const fullyClean = sanitizeHtml(txt, {
+            allowedTags: [ 'p' ]
+        });
+        const md = toMarkdown( fullyClean );
+        txt = md.replace(/\t/gm,"");           
+
+        const parseTime = function(timeObject){
+
+            var HH = ( timeObject[1] ) ? (( timeObject[1].length < 2 ) ? "0" + timeObject[1] : timeObject[1]) : "";
+            var MM = timeObject[2];
+            var SS = timeObject[3];
+            return `${HH}${MM}:${SS}`;
+
+        }
+
+        const EOL = "\r\n";
+        let vtt = "";
+            vtt += "WEBVTT" + EOL;
+            vtt += EOL;
+            vtt += "NOTE Paragraph" + EOL;
+
+        txt = txt.split('\n');
+
+        const startTime = /^(\d{1,2}:)?(\d{1,2}):(\d{1,2})/
+        const endTime   = /(\d{1,2}:)?(\d{1,2}):(\d{1,2})$/
+
+        txt
+        .filter((sub)=> sub.length) // Filter out empty newlines
+        .map((sub)=> sub.trim())    // Trim leading and ... spaces
+        .map((sub)=>{
+
+            const _startTime = sub.match(startTime);
+            const _endTime   = sub.match(endTime);
+            vtt += EOL;
+            vtt += parseTime(_startTime) + " --> " + parseTime(_endTime) + "\r\n";
+            vtt += sub.replace(parseTime(_startTime), '').replace(parseTime(_endTime), '').trim();
+            vtt += EOL;
+
+        });
+
+        return vtt;
+    }
+});
+
 exportFormats.send.push({
     name: 'Google Drive',
     setup: function(cb) {
